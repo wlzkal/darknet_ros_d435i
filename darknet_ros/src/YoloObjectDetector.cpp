@@ -111,7 +111,7 @@ void YoloObjectDetector::init() {
   }
 
   // Load network.
-  setupNetwork(cfg, weights, data, thresh, detectionNames, numClasses_, 0, 0, 1, 0.5, 0, 0, 0, 0);
+  setupNetwork(cfg, weights, data, 0.8, detectionNames, numClasses_, 0, 0, 1, 0.5, 0, 0, 0, 0); // thresh를 0.8로 수정
   yoloThread_ = std::thread(&YoloObjectDetector::yolo, this);
 
   // Initialize publisher and subscriber.
@@ -323,6 +323,7 @@ void* YoloObjectDetector::detectInThread() {
     printf("Objects:\n\n");
   }
   image display = buff_[(buffIndex_ + 2) % 3];
+  // 필터링된 바운딩 박스만 그리도록 draw_detections를 수정
   draw_detections(display, dets, nboxes, demoThresh_, demoNames_, demoAlphabet_, demoClasses_);
 
   // extract the bounding boxes and send them to ROS
@@ -341,7 +342,7 @@ void* YoloObjectDetector::detectInThread() {
 
     // iterate through possible boxes and collect the bounding boxes
     for (j = 0; j < demoClasses_; ++j) {
-      if (dets[i].prob[j]) {
+      if (dets[i].prob[j] > 0.8) {
         float x_center = (xmin + xmax) / 2;
         float y_center = (ymin + ymax) / 2;
         float BoundingBox_width = xmax - xmin;
@@ -547,7 +548,7 @@ void* YoloObjectDetector::publishInThread() {
   if (num > 0 && num <= 100) {
     for (int i = 0; i < num; i++) {
       for (int j = 0; j < numClasses_; j++) {
-        if (roiBoxes_[i].Class == j) {
+        if (roiBoxes_[i].Class == j && roiBoxes_[i].prob > 0.8) {
           rosBoxes_[j].push_back(roiBoxes_[i]);
           rosBoxCounter_[j]++;
         }
