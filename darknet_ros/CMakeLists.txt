@@ -49,7 +49,10 @@ endif ( X11_FOUND )
 # Find rquired packeges
 find_package(Boost REQUIRED COMPONENTS thread)
 find_package(OpenCV REQUIRED)
+find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
 include_directories(${OpenCV_INCLUDE_DIRS})
+include_directories(${Python3_INCLUDE_DIRS})
+link_directories(${Python3_LIBRARY_DIRS})
 find_package(catkin REQUIRED
   COMPONENTS
     cv_bridge
@@ -95,6 +98,8 @@ include_directories(
 set(PROJECT_LIB_FILES
     src/YoloObjectDetector.cpp                    src/image_interface.cpp
 )
+catkin_install_python(PROGRAMS scripts/yolov8_ros_node.py
+                      DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 set(DARKNET_CORE_FILES
     ${DARKNET_PATH}/src/activation_layer.c        ${DARKNET_PATH}/src/im2col.c
@@ -195,6 +200,7 @@ target_link_libraries(${PROJECT_NAME}_lib
 target_link_libraries(${PROJECT_NAME}
   ${PROJECT_NAME}_lib
 )
+target_link_libraries(${PROJECT_NAME} ${Python3_LIBRARIES})
 
 target_link_libraries(${PROJECT_NAME}_nodelet
   ${PROJECT_NAME}_lib
