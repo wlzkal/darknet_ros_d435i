@@ -46,13 +46,23 @@ if ( X11_FOUND )
   message ( STATUS " X11_LIBRARIES: " ${X11_LIBRARIES} )
 endif ( X11_FOUND )
 
-# Find rquired packeges
+# Find required packages
 find_package(Boost REQUIRED COMPONENTS thread)
 find_package(OpenCV REQUIRED)
 find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
+
+# Find TIFF, GDAL, GeoTIFF
+find_package(TIFF REQUIRED)
+find_package(GDAL REQUIRED)
+
+
+# Include directories
 include_directories(${OpenCV_INCLUDE_DIRS})
 include_directories(${Python3_INCLUDE_DIRS})
+include_directories(${TIFF_INCLUDE_DIRS})
+include_directories(${GDAL_INCLUDE_DIR} ${GeoTIFF_INCLUDE_DIR})
 link_directories(${Python3_LIBRARY_DIRS})
+
 find_package(catkin REQUIRED
   COMPONENTS
     cv_bridge
@@ -98,6 +108,7 @@ include_directories(
 set(PROJECT_LIB_FILES
     src/YoloObjectDetector.cpp                    src/image_interface.cpp
 )
+
 catkin_install_python(PROGRAMS scripts/yolov8_ros_node.py
                       DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
@@ -194,12 +205,15 @@ target_link_libraries(${PROJECT_NAME}_lib
   ${Boost_LIBRARIES}
   ${OpenCV_LIBRARIES}
   ${catkin_LIBRARIES}
-  ${OpenCV_LIBS}
+  ${TIFF_LIBRARIES}
+  ${GDAL_LIBRARY}
+
 )
 
 target_link_libraries(${PROJECT_NAME}
   ${PROJECT_NAME}_lib
 )
+
 target_link_libraries(${PROJECT_NAME} ${Python3_LIBRARIES})
 
 target_link_libraries(${PROJECT_NAME}_nodelet
@@ -287,3 +301,4 @@ if (cmake_clang_tools_FOUND)
     CF_WERROR
   )
 endif (cmake_clang_tools_FOUND)
+
